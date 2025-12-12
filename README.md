@@ -44,7 +44,7 @@ Trattandosi di un'applicazione frontend pura, non è richiesta alcuna configuraz
 
 1.  **Clona il repository:**
     ```bash
-    git clone [https://github.com/smal82/Previsioni-Marine-Italia.git](https://github.com/smal82/Previsioni-Marine-Italia.git)
+    git clone https://github.com/smal82/Previsioni-Marine-Italia
     cd Previsioni-Marine-Italia
     ```
 2.  **Apri nel browser:** Apri il file `index.html` direttamente nel tuo browser.
