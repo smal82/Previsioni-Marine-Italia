@@ -1,0 +1,149 @@
+/* CSS Base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+.container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 900px;
+}
+h1 {
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 300;
+}
+
+/* Stili Input e Button */
+#city-input {
+    width: calc(100% - 110px);
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+#search-btn {
+    width: 100px;
+    padding: 12px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 10px;
+}
+.input-group {
+    display: flex;
+    margin-bottom: 20px;
+}
+#results {
+    /* AGGIUNTO: Nasconde il div all'inizio */
+    display: none; 
+    
+    margin-top: 25px;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+}
+.error {
+    color: #dc3545;
+    font-weight: bold;
+    text-align: center;
+}
+    
+/* Stile specifico per il widget di Autocomplete (DA AGGIUNGERE) */
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Assicura che sia sopra gli altri elementi */
+}
+.ui-menu-item-wrapper {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.ui-menu-item-wrapper.ui-state-active {
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+}
+
+/* LAYOUT ORARIO A CARD (NO SCROLL ORIZZONTALE) */
+.hourly-forecast {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: flex-start;
+    padding: 10px 0;
+    gap: 15px; 
+}
+
+.forecast-card {
+    flex: 1 1 calc(20% - 15px); 
+    min-width: 120px; 
+    padding: 15px 10px;
+    background-color: #e9f0ff;
+    border: 1px solid #cce0ff;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+/* Stili Dettagli Card */
+.card-time {
+    font-weight: bold;
+    color: #0056b3;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+.card-date {
+    font-size: 0.8em;
+    color: #555;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+.card-detail {
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Responsive Media Queries per l'adattamento delle colonne */
+@media (max-width: 768px) {
+    .forecast-card {
+        flex: 1 1 calc(33.333% - 15px);
+    }
+}
+@media (max-width: 500px) {
+    .forecast-card {
+        flex: 1 1 100%;
+    }
+    .input-group {
+        flex-direction: column;
+    }
+    #city-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    #search-btn {
+        width: 100%;
+        margin-left: 0;
+    }
+}

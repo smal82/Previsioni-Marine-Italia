@@ -198,5 +198,8 @@ $(document).ready(function() {
         
         htmlContent += `</div>`; // Chiude .hourly-forecast
         $resultsDiv.html(htmlContent);
+		
+		// AGGIUNTO: Rende visibile il div con i risultati validi
+        $resultsDiv.show();
     }
 });
