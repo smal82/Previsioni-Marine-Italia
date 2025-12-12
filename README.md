@@ -3,7 +3,7 @@
 Una semplice applicazione web responsive creata con HTML, CSS e jQuery per visualizzare le previsioni marine e del vento per le località costiere italiane, utilizzando le API di Open-Meteo.
 
 L'applicazione è stata ottimizzata per:
-* Visualizzazione responsiva su tutti i dispositivi (niente scroll orizzontale).
+* Visualizzazione responsiva su tutti i dispositivi.
 * Velocità del vento espressa in **Nodi**.
 * Dati organizzati in card orarie per le prossime 24 ore.
 
@@ -22,7 +22,11 @@ L'applicazione utilizza una **doppia chiamata API** (`marine-api` e `api.open-me
 
 * **Velocità Vento:** Dati forniti direttamente in Nodi (`kn`).
 * **Direzione Vento:** Convertita da gradi in punti cardinali (N, NE, E, SE, ecc.).
-* **Layout:** Le previsioni orarie sono mostrate in una griglia verticale che si adatta allo schermo (niente scroll laterale).
+* **Layout:** Le previsioni orarie sono mostrate in una griglia verticale che si adatta allo schermo.
+
+## 🔗 Demo
+
+Potete utilizzare la pagina anche dal seguente link: https://smal82.github.io/Previsioni-Marine-Italia/
 
 ## 🚀 Istruzioni per l'Avvio
 
