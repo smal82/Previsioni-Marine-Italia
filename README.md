@@ -1,11 +1,28 @@
-# 🇮🇹 Previsioni Marine Italia (Open-Meteo)
+# 🌊 Previsioni Marine Italia 🌐 (Open-Meteo)
+
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white)
+![API](https://img.shields.io/badge/API-OpenMeteo-blue?style=for-the-badge)
 
 Una semplice applicazione web responsive creata con HTML, CSS e jQuery per visualizzare le previsioni marine e del vento per le località costiere italiane, utilizzando le API di Open-Meteo.
 
 L'applicazione è stata ottimizzata per:
-* Visualizzazione responsiva su tutti i dispositivi.
+* **Visualizzazione responsiva** su tutti i dispositivi (niente scroll orizzontale).
 * Velocità del vento espressa in **Nodi**.
 * Dati organizzati in card orarie per le prossime 24 ore.
+
+## 🌊 Funzionalità Chiave
+
+L'applicazione utilizza una **doppia chiamata API** (`marine-api` e `api.open-meteo`) per aggirare i conflitti di variabili all'interno della piattaforma Open-Meteo, garantendo dati accurati per vento e onde.
+
+* **Stato del Mare:** L'altezza onda è classificata con una descrizione testuale (es. "Poco Mosso", "Agitato") basata su una scala di riferimento.
+* **Fuso Orario Dinamico:** Gli orari delle previsioni sono visualizzati in base al fuso orario specifico della località ricercata (es. `Europe/Rome`), utilizzando le impostazioni locali del browser.
+* **Velocità Vento:** Dati forniti direttamente in Nodi (`kn`).
+* **Direzione Vento:** Convertita da gradi in punti cardinali (N, NE, E, SE, ecc.).
+* **Layout:** Le previsioni orarie sono mostrate in una griglia verticale che si adatta allo schermo.
+* **Ricerca Rapida:** È possibile avviare la ricerca sia cliccando il pulsante che premendo il tasto **Invio** nel campo di testo.
 
 ## 🛠️ Tecnologia Utilizzata
 
@@ -16,17 +33,10 @@ L'applicazione è stata ottimizzata per:
     * [Open-Meteo Marine Weather API](https://open-meteo.com/en/docs/marine-api) (Per l'Altezza Onda).
     * [Open-Meteo Weather Forecast API](https://open-meteo.com/en/docs) (Per Velocità e Direzione del Vento).
 
-## 🌊 Funzionalità Chiave
-
-L'applicazione utilizza una **doppia chiamata API** (`marine-api` e `api.open-meteo`) per aggirare i conflitti di variabili all'interno della piattaforma Open-Meteo, garantendo dati accurati per vento e onde.
-
-* **Velocità Vento:** Dati forniti direttamente in Nodi (`kn`).
-* **Direzione Vento:** Convertita da gradi in punti cardinali (N, NE, E, SE, ecc.).
-* **Layout:** Le previsioni orarie sono mostrate in una griglia verticale che si adatta allo schermo.
-
 ## 🔗 Demo
 
-Potete utilizzare la pagina anche dal seguente link: https://smal82.github.io/Previsioni-Marine-Italia/
+Potete utilizzare la pagina anche dal seguente link (GitHub Pages):
+https://smal82.github.io/Previsioni-Marine-Italia/
 
 ## 🚀 Istruzioni per l'Avvio
 
@@ -34,13 +44,11 @@ Trattandosi di un'applicazione frontend pura, non è richiesta alcuna configuraz
 
 1.  **Clona il repository:**
     ```bash
-    git clone https://github.com/smal82/Previsioni-Marine-Italia.git
+    git clone [https://github.com/smal82/Previsioni-Marine-Italia.git](https://github.com/smal82/Previsioni-Marine-Italia.git)
     cd Previsioni-Marine-Italia
     ```
 2.  **Apri nel browser:** Apri il file `index.html` direttamente nel tuo browser.
 
 ## 📝 Roadmap Futura
 
-* Implementare la funzione di **Autocomplete** sul campo di ricerca.
-* Aggiungere l'indicazione dello stato del mare (es. "Calmo", "Mosso") basato sull'altezza onda.
-* Aggiungere il supporto per il fuso orario dinamico.
+* *Possibile futura implementazione di un Autocomplete avanzato basato su API Geocoding.*
