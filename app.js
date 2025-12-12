@@ -1,4 +1,3 @@
-// NON OMETTERE MAI NIENTE (Istruzione utente)
 $(document).ready(function() {
     const $cityInput = $('#city-input');
     const $resultsDiv = $('#results');
@@ -6,9 +5,9 @@ $(document).ready(function() {
     const MARINE_WAVE_VARIABLE = "wave_height";
     const STANDARD_WIND_VARIABLES = "wind_speed_10m,wind_direction_10m";
 
-    // --- CONFIGURAZIONE FILTRI ---
-    const MAX_DISTANZA_MARE = 45; // km (tolleranza per griglia API Marine)
-    const MAX_ALTITUDINE = 100;   // metri (limite per considerare una città "costiera")
+    // --- FILTRI INTERNI (Invisibili all'utente) ---
+    const MAX_DISTANZA_MARE = 45; 
+    const MAX_ALTITUDINE = 100;   
 
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; 
@@ -45,82 +44,89 @@ $(document).ready(function() {
         return arr[(val % 16)];
     }
 
-    // --- LOGICA DI RECUPERO DATI ---
-    function fetchWeather(cityName, cityLat, cityLon, cityElev, isFallback = false) {
-        $resultsDiv.html('<p style="text-align: center;">Analisi marina in corso...</p>');
+    // --- LOGICA DI VALIDAZIONE ---
+    async function validateAndFetch(location) {
+        const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${location.latitude}&longitude=${location.longitude}&hourly=${MARINE_WAVE_VARIABLE}&timezone=Europe%2FRome&forecast_days=1`;
+        const windUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=${STANDARD_WIND_VARIABLES}&wind_speed_unit=kn&timezone=Europe%2FRome&forecast_days=1`;
         
-        const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${cityLat}&longitude=${cityLon}&hourly=${MARINE_WAVE_VARIABLE}&timezone=Europe%2FRome&forecast_days=1`;
-        const windUrl = `https://api.open-meteo.com/v1/forecast?latitude=${cityLat}&longitude=${cityLon}&hourly=${STANDARD_WIND_VARIABLES}&wind_speed_unit=kn&timezone=Europe%2FRome&forecast_days=1`;
-        
-        $.when(
-            $.ajax({ url: marineUrl, type: 'GET', dataType: 'json' }),
-            $.ajax({ url: windUrl, type: 'GET', dataType: 'json' })
-        )
-        .done(function(marineResponse, windResponse) {
-            const marineData = marineResponse[0];
-            const windData = windResponse[0];
-            const distance = getDistance(cityLat, cityLon, marineData.latitude, marineData.longitude);
+        try {
+            const [marineRes, windRes] = await Promise.all([
+                $.ajax({ url: marineUrl, type: 'GET', dataType: 'json' }),
+                $.ajax({ url: windUrl, type: 'GET', dataType: 'json' })
+            ]);
 
-            // --- CONTROLLO FILTRI ---
-            if (distance > MAX_DISTANZA_MARE || cityElev > MAX_ALTITUDINE) {
-                // Se fallisce e non siamo già in un tentativo fallback, proviamo con "[Città] Marina"
-                if (!isFallback) {
-                    console.log(`Punto principale [${cityName}] scartato. Provo fallback Marina...`);
-                    tryMarinaFallback(cityName);
-                } else {
-                    $resultsDiv.html(`<p class="error">ERRORE: ${cityName} non è una zona costiera valida (Mare a ${distance.toFixed(1)}km, Altitudine ${cityElev}m).</p>`);
-                }
-                return;
+            const distance = getDistance(location.latitude, location.longitude, marineRes.latitude, marineRes.longitude);
+
+            // Validazione silenziosa
+            if (distance <= MAX_DISTANZA_MARE && location.elevation <= MAX_ALTITUDINE) {
+                // Specifichiamo bene il nome per evitare ambiguità (es. Castellammare di Stabia, Campania)
+                const fullLocationName = `${location.name}${location.admin1 ? ', ' + location.admin1 : ''}`;
+                displayResults(fullLocationName, marineRes, windRes);
+                return true; 
             }
-
-            displayResults(cityName, marineData, windData, distance, cityElev);
-        })
-        .fail(function() {
-            $resultsDiv.html('<p class="error">Errore API. Riprova.</p>');
-        });
+            return false;
+        } catch (e) {
+            return false;
+        }
     }
 
-    // --- IL TRUCCO: Fallback automatico per Alcamo -> Alcamo Marina ---
-    function tryMarinaFallback(originalCity) {
-        const fallbackName = originalCity + " Marina";
+    async function tryMarinaFallback(originalName) {
+        const fallbackName = originalName + " Marina";
         const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${fallbackName}&count=1&language=it&country=IT`;
         
-        $.getJSON(geocodingUrl).done(function(data) {
+        try {
+            const data = await $.getJSON(geocodingUrl);
             if (data.results && data.results.length > 0) {
-                const loc = data.results[0];
-                fetchWeather(loc.name, loc.latitude, loc.longitude, loc.elevation, true);
-            } else {
-                $resultsDiv.html(`<p class="error">ERRORE: ${originalCity} è nell'entroterra e non è stata trovata una località "Marina" associata.</p>`);
+                return await validateAndFetch(data.results[0]);
             }
-        });
+        } catch (e) {}
+        return false;
     }
 
-    function performSearch() {
+    async function performSearch() {
         const city = $cityInput.val().trim();
         if (city === "") return;
 
         $resultsDiv.html('<p style="text-align: center;">Ricerca in corso...</p>');
         $resultsDiv.show();
         
-        const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=it&country=IT`;
+        // Cerchiamo 10 risultati per gestire omonimie
+        const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=10&language=it&country=IT`;
         
-        $.getJSON(geocodingUrl).done(function(geoData) {
+        try {
+            const geoData = await $.getJSON(geocodingUrl);
+            
             if (geoData.results && geoData.results.length > 0) {
-                const loc = geoData.results[0];
-                fetchWeather(loc.name, loc.latitude, loc.longitude, loc.elevation);
+                let found = false;
+                
+                for (const loc of geoData.results) {
+                    found = await validateAndFetch(loc);
+                    if (found) break; 
+                }
+
+                if (!found) {
+                    found = await tryMarinaFallback(city);
+                }
+
+                if (!found) {
+                    $resultsDiv.html(`<p class="error">Previsioni marine non disponibili per "${city}". Seleziona una località sulla costa.</p>`);
+                }
+                
             } else {
                 $resultsDiv.html('<p class="error">Località non trovata.</p>');
             }
-        });
+        } catch (e) {
+            $resultsDiv.html('<p class="error">Errore di connessione.</p>');
+        }
     }
 
     $cityInput.on('keydown', function(e) { if (e.key === 'Enter') performSearch(); });
     $('#search-btn').on('click', performSearch);
 
-    function displayResults(cityName, marineData, windData, distance, elevation) {
+    function displayResults(cityName, marineData, windData) {
         const apiTimezone = windData.timezone; 
-        let htmlContent = `<h2>Meteo: ${cityName}</h2>`;        
-        
+        // Titolo pulito con nome e regione
+        let htmlContent = `<h2 style="margin-bottom: 20px;">${cityName}</h2>`;
 
         htmlContent += `<div class="hourly-forecast">`;
         for (let i = 0; i < 24; i++) {
