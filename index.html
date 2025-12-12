@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Previsioni Marine Italia</title>
+    <title>🌊 Previsioni Marine Italia 🌐</title>
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
     <style>
         /* CSS Base */
         body {
@@ -70,20 +72,14 @@
         /* LAYOUT ORARIO A CARD (NO SCROLL ORIZZONTALE) */
         .hourly-forecast {
             display: flex;
-            flex-wrap: wrap; /* QUESTA RIGA FONDAMENTALE FORZA L'ANDATA A CAPO */
-            justify-content: flex-start; /* Allinea le card a sinistra */
+            flex-wrap: wrap; 
+            justify-content: flex-start;
             padding: 10px 0;
-            gap: 15px; /* Spazio tra le card */
-            /* Rimosso overflow-x: auto e tutti gli stili di scrollbar */
+            gap: 15px; 
         }
 
         .forecast-card {
-            /* Larghezza flessibile: 
-               - Su schermi grandi: 5 card per riga (18% circa)
-               - Su schermi medi: 3 card per riga (30% circa)
-               - Su schermi piccoli: 1 card per riga (100%)
-            */
-            flex: 1 1 calc(20% - 15px); /* DEFAULT: circa 5 card per riga con gap */
+            flex: 1 1 calc(20% - 15px); 
             min-width: 120px; 
             padding: 15px 10px;
             background-color: #e9f0ff;
@@ -115,13 +111,11 @@
 
         /* Responsive Media Queries per l'adattamento delle colonne */
         @media (max-width: 768px) {
-            /* Schermi Tablet: 3 card per riga */
             .forecast-card {
                 flex: 1 1 calc(33.333% - 15px);
             }
         }
         @media (max-width: 500px) {
-            /* Schermi Mobile: 1 colonna (100% di larghezza) */
             .forecast-card {
                 flex: 1 1 100%;
             }
@@ -144,7 +138,7 @@
         <h1>Ricerca Previsioni Marine Italia</h1>
         
         <div class="input-group">
-            <input type="text" id="city-input" placeholder="Inserisci città costiera italiana">
+            <input type="text" id="city-input" placeholder="Cerca città costiera...">
             <button id="search-btn">Cerca</button>
         </div>
         
