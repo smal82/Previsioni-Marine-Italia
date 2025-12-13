@@ -1,3 +1,4 @@
+// NON OMETTERE MAI NIENTE (Istruzione utente)
 $(document).ready(function() {
     const $cityInput = $('#city-input');
     const $resultsDiv = $('#results');
@@ -8,6 +9,7 @@ $(document).ready(function() {
     // --- FILTRI INTERNI (Invisibili all'utente) ---
     const MAX_DISTANZA_MARE = 45; 
     const MAX_ALTITUDINE = 100;   
+    const COUNTRY_CODE = "IT"; // Codice paese (Italia)
 
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371; 
@@ -44,7 +46,7 @@ $(document).ready(function() {
         return arr[(val % 16)];
     }
 
-    // --- LOGICA DI VALIDAZIONE ---
+    // --- LOGICA DI VALIDAZIONE E RECUPERO ---
     async function validateAndFetch(location) {
         const marineUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${location.latitude}&longitude=${location.longitude}&hourly=${MARINE_WAVE_VARIABLE}&timezone=Europe%2FRome&forecast_days=1`;
         const windUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=${STANDARD_WIND_VARIABLES}&wind_speed_unit=kn&timezone=Europe%2FRome&forecast_days=1`;
@@ -57,9 +59,8 @@ $(document).ready(function() {
 
             const distance = getDistance(location.latitude, location.longitude, marineRes.latitude, marineRes.longitude);
 
-            // Validazione silenziosa
+            // Validazione silenziosa su Distanza Mare e Altitudine
             if (distance <= MAX_DISTANZA_MARE && location.elevation <= MAX_ALTITUDINE) {
-                // Specifichiamo bene il nome per evitare ambiguità (es. Castellammare di Stabia, Campania)
                 const fullLocationName = `${location.name}${location.admin1 ? ', ' + location.admin1 : ''}`;
                 displayResults(fullLocationName, marineRes, windRes);
                 return true; 
@@ -72,12 +73,15 @@ $(document).ready(function() {
 
     async function tryMarinaFallback(originalName) {
         const fallbackName = originalName + " Marina";
-        const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${fallbackName}&count=1&language=it&country=IT`;
+        const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${fallbackName}&count=1&language=it&country=${COUNTRY_CODE}`;
         
         try {
             const data = await $.getJSON(geocodingUrl);
             if (data.results && data.results.length > 0) {
-                return await validateAndFetch(data.results[0]);
+                const loc = data.results[0];
+                if (loc.country_code === COUNTRY_CODE) {
+                     return await validateAndFetch(loc);
+                }
             }
         } catch (e) {}
         return false;
@@ -90,26 +94,41 @@ $(document).ready(function() {
         $resultsDiv.html('<p style="text-align: center;">Ricerca in corso...</p>');
         $resultsDiv.show();
         
-        // Cerchiamo 10 risultati per gestire omonimie
-        const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=10&language=it&country=IT`;
+        const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=10&language=it`;
         
         try {
             const geoData = await $.getJSON(geocodingUrl);
             
             if (geoData.results && geoData.results.length > 0) {
+                
+                // Dividiamo i risultati in italiani e non italiani
+                const italianResults = geoData.results.filter(loc => loc.country_code === COUNTRY_CODE);
+                const foreignResults = geoData.results.filter(loc => loc.country_code !== COUNTRY_CODE);
+
                 let found = false;
                 
-                for (const loc of geoData.results) {
-                    found = await validateAndFetch(loc);
-                    if (found) break; 
+                if (italianResults.length > 0) {
+                    // 1. Scansione dei risultati italiani (inclusa la risoluzione ambiguità)
+                    for (const loc of italianResults) {
+                        found = await validateAndFetch(loc);
+                        if (found) break; 
+                    }
                 }
 
+                // 2. Se non si è trovato nulla, prova il fallback "Marina" in Italia
                 if (!found) {
                     found = await tryMarinaFallback(city);
                 }
-
+                
+                // 3. Gestione degli errori finali
                 if (!found) {
-                    $resultsDiv.html(`<p class="error">Previsioni marine non disponibili per "${city}". Seleziona una località sulla costa.</p>`);
+                    if (foreignResults.length > 0 && italianResults.length === 0) {
+                        // Se sono stati trovati solo risultati esteri (es. Barcellona)
+                        $resultsDiv.html(`<p class="error">ERRORE: La località "${city}" si riferisce a una città estera. Attualmente sono supportate solo le previsioni marine per l'Italia.</p>`);
+                    } else {
+                        // Se non è costiera (es. Partinico/Milano)
+                        $resultsDiv.html(`<p class="error">Previsioni marine non disponibili per "${city}". Seleziona una località sulla costa.</p>`);
+                    }
                 }
                 
             } else {
@@ -125,19 +144,21 @@ $(document).ready(function() {
 
     function displayResults(cityName, marineData, windData) {
         const apiTimezone = windData.timezone; 
-        // Titolo pulito con nome e regione
-        let htmlContent = `<h2 style="margin-bottom: 20px;">${cityName}</h2>`;
+        let htmlContent = `<h2 style="margin-bottom: 20px;">Meteo Marino: ${cityName}</h2>`;
 
         htmlContent += `<div class="hourly-forecast">`;
         for (let i = 0; i < 24; i++) {
             const time = windData.hourly.time[i];
             const wave = marineData.hourly.wave_height[i];
+            const windSpeed = windData.hourly.wind_speed_10m[i];
+            const windDir = windData.hourly.wind_direction_10m[i];
+            
             htmlContent += `
                 <div class="forecast-card">
                     <div class="card-time">${formatTimeForTimezone(time, apiTimezone)}</div>
                     <div class="card-detail">${getSeaCondition(wave)}</div>
                     <div class="card-detail">Onda: <strong>${wave.toFixed(1)} m</strong></div>
-                    <div class="card-detail">💨 Vento: <strong>${windData.hourly.wind_speed_10m[i].toFixed(1)} kn</strong></div>
+                    <div class="card-detail">💨 Vento: <strong>${windSpeed.toFixed(1)} kn</strong> (${degToCard(windDir)})</div>
                 </div>`;
         }
         $resultsDiv.html(htmlContent + `</div>`);
